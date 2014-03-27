@@ -1,0 +1,16 @@
+citHeader("To cite the FRGEpistasis package in publications use:")
+
+citEntry(entry="article",  
+         title  = "Epistasis Analysis for Quantitative Traits by Functional Regression Model",
+         author = personList(
+           person(given="Futao", family="Zhang"),
+           person(given="Eric", family="Boerwinkle"),
+		   person(given="Momiao", family="Xiong")),		   
+         journal = "Genome Research",
+         year = "2014",
+         volume = "",
+         pages = "",
+         textVersion = paste("Futao Zhang, Eric Boerwinkle and Momiao Xiong.",
+           "Epistasis Analysis for Quantitative Traits by Functional Regression Model.",
+           "Genome Research ,  (2014).")
+         )

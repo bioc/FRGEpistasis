@@ -1,0 +1,14 @@
+Package: FRGEpistasis
+Type: Package
+Title: Epistasis Analysis for Quantitative Traits by Functional
+        Regression Model
+biocViews: Genetics, NetworkInference, GeneticVariability, Software
+Version: 0.99.5
+Date: 2014-03-24
+Author: Futao Zhang
+Maintainer: Futao Zhang <futoaz@gmail.com>
+Depends: R (>= 2.15), MASS, fda, methods, stats
+Imports: utils
+Description: A Tool for Epistasis Analysis Based on Functional
+        Regression Model
+License: GPL-2

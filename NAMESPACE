@@ -1,0 +1,6 @@
+exportPattern("^[[:alpha:]]+")
+importFrom(utils, read.csv, read.table)
+import(MASS)
+import(fda)
+import(methods)
+import(stats)

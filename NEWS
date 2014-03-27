@@ -1,0 +1,19 @@
+CHANGES IN VERSION 0.99.5
+-------------------------
+ o Added FDR control
+
+CHANGES IN VERSION 0.99.4
+-------------------------
+ o Completed the man pages
+ o Added the NEWS file
+ o Updated the DESCRIPTION file
+ o Completed the vignette
+ o Updated the genotype file format
+
+CHANGES IN VERSION 0.99.3
+-------------------------
+ o Corrected the biocViews
+
+CHANGES IN VERSION 0.99.1
+-------------------------
+ o Added FRGEpistasis vignette

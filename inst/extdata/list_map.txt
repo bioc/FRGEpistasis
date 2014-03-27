@@ -1,0 +1,5 @@
+chr1.map
+chr2.map
+chr3.map
+chr4.map
+chr5.map

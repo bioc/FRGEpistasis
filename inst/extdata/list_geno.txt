@@ -1,0 +1,5 @@
+simGeno-chr1.raw
+simGeno-chr2.raw
+simGeno-chr3.raw
+simGeno-chr4.raw
+simGeno-chr5.raw

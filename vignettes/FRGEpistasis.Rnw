@@ -1,0 +1,166 @@
+%\VignetteIndexEntry{FRGEpistasis: A Tool for Epistasis Analysis Based on Functional Regression Model}
+%\VignetteDepends{fda}
+
+\documentclass{article}
+\usepackage{fullpage}
+\usepackage{Sweave}
+\usepackage{amsmath}  
+\usepackage{graphicx}
+\usepackage[utf8]{inputenc}
+\usepackage[pdftex,plainpages=false, letterpaper, bookmarks, bookmarksnumbered, colorlinks, linkcolor=blue, citecolor=blue, filecolor=blue, urlcolor=blue]{hyperref}
+
+% Different font in captions
+\newcommand{\captionfonts}{\footnotesize}
+
+
+\begin{document}
+\SweaveOpts{concordance=TRUE}
+
+\title{FRGEpistasis: A Tool for Epistasis Analysis Based on Functional Regression Model}
+\author{Futao Zhang, Eric Boerwinkle, Momiao Xiong\\
+  School of Public Health\\
+  University of Texas Health Science Center at Houston}
+
+\maketitle
+
+\SweaveOpts{keep.source=TRUE, eps=FALSE} 
+
+
+\section{Introduction}
+  Epistasis is the primary factor in molecular evolution (Breen et al. 2012) and plays an important role in quantitative genetic analysis (Steen 2011). Epistasis is a phenomenon in which the effect of one genetic variant is masked or modified by one or other genetic variants and is often defined as the departure from additive effects in a linear model (Fisher 1918).\\
+  The critical barrier in interaction analysis for rare variants is that most traditional statistical methods for testing interaction were originally designed for testing the interaction between common variants and are difficult to apply to rare variants because of their prohibitive computational time and low power. The great challenges for successful detection of interactions with next-generation sequencing data are:
+  \begin{itemize}
+  \item{(1) lack of methods for interaction analysis with rare variants.}
+  \item{(2) severe multiple testing.}
+  \item{(3) time consuming computations.}
+  \end{itemize}
+To meet these challenges, we shift the paradigm of interaction analysis between two loci to interaction analysis between two sets of loci or genomic regions and collectively test interaction between all possible pairs of SNPs within two genomic regions. In other words, we take a genome region as a basic unit of interaction analysis and use high dimensional data reduction and functional data analysis techniques to develop a novel functional regression model to collectively test interaction between all possible pairs of SNPs within two genome regions.\\
+To support our method, we developed a R package named FRGEpistasis. FRGEpistasis is designed to detect the epistasis between genes or genomic regions for both common variants and rare variants. Currently FRGEpistasis was developed by Futao Zhang with R language and maintained in \href{https://sph.uth.edu/hgc/faculty/xiong/index.html} {Xiong's lab} at UTSPH. This tool is friendly, convenient and memory efficient. It currently has the following functional modules:
+\begin{itemize}
+\item{ Epistasis test using Functional Regression Model  }
+\item{ Epistasis test using Principal Components Analysis }
+\item{ Epistasis test of Pointwise }
+\end{itemize}
+This package is memory efficient with high performance.
+\begin{itemize}
+\item{{\tt Memory efficiency}: Only store reduced expansion data of genotypes instead of raw data of genotypes. In real dataset the genotypes on different chromosome are always organized into different files. And each genotype file is very large. Reading all the files into memory is unacceptable. This package reads the files one by one and reduces the genotype dimension with Fourier expansion. After dimension reduction, the whole genome expansion genotype data can be easily stored in the memory.}
+\item{{\tt high performance}: Each data file only needs to read  once and reduce dimension once. So I/O times are reduced and repeated computing of data reduction was avoided; This method is a kind of group test. We take a gene(or genomic region) as the test unit. The number of Test is sharply reduced comparing with point-wise interaction (SNP-SNP) test; The dimension of genotype is reduced by functional expansion, So the time of each test is reduced.}
+\end{itemize}
+In this version we implemented FDR (False Discovery Rate) for a multiple testing threshold to our package. When the FDR parameter == 1, FDR control is turned off. So users can use this parameter to switch FDR control on and off.\\
+
+At present our package can not do multi-loci interaction test, that is it can not test 3-gene interaction ($G\times G\times G$) or more.
+
+\section{ Installing FRGEpistasis}
+To install the R package FRGEpistasis, you can install it through:
+
+  library(BiocInstaller)
+  
+  biocLite("FRGEpistasis") \\  
+Or download the source code from the bioconductor website.
+
+\section{ Data Formats}
+In order to process large-scale NGS data we have done a lot optimazation work.This package can take the genotype on one chromesome as the input genotype unit, that means it can deal with a genotyoe file list.And the package expands the whole genotype at one time. After this step only expansion data is stored, so a lot memory space is saved. The sample data are located in the "extdata" directory.
+This sample data is extracted from exome sequence data (the NHLBI's Exome Sequencing Project).
+
+\subsection{Genotype file format}
+
+The format of Genotype file is recoded from PLINK PED file with command:
+
+     plink --file DATA --recodeA\\
+The first six columns are Family ID, Individual ID, Paternal ID, Maternal ID, Sex and Phenotype. The data column 7 onwards are genotypes coding in 0,1,2 where the title of the column is RS and missing value is coded as 3.
+
+<<>>=
+geno_info <- read.table(system.file("extdata", "simGeno-chr2.raw", package="FRGEpistasis"),header=TRUE)
+geno_info[1:5,1:9]
+@
+
+\subsection{Map file format}
+
+Map file contains 4 columns: Chromosome, snp identifier, Genetic distance, base-pair genomic position. The map file has no header line.
+<<>>=
+map_info <- read.table(system.file("extdata", "chr2.map", package="FRGEpistasis"))
+map_info[1:5,]
+
+@
+
+\subsection{Phenotype file format}
+
+Phenotype file contains 2 columns: Individual ID and phenotype.
+<<>>=
+pheno_info <- read.csv(system.file("extdata", "phenotype.csv", package="FRGEpistasis"),header=TRUE)
+pheno_info[1:5,]
+@
+
+\subsection{Gene Annotation file format}
+This package takes a genome region as a basic unit of interaction analysis instead of a SNP. And this Gene Annotation file is used to set the scope of each region. This file can be selfdefined or derived from the Consensus CDS (CCDS) project if gene as the test unit.\\
+Gene Annotation file contains 4 columns indicate the gene name, chromosome, gene start position and gene end position. Each line represent the region of a gene. The start position is 0-based and end position is 1-based. 
+Thus the length of a gene is equal to pos(end) - pos(start). 
+<<>>=
+gene.list<-read.csv(system.file("extdata", "gene.list.csv", package="FRGEpistasis"))
+gene.list
+@
+
+\subsection{genotype files index and map files index}
+
+Because the NGS data are large, They are always organized in many files. For example, In real dataset the genotypes on different chromosome are always organized into different files. In order to bring convenience to users and alleviate the burden of the memory, FRGEpistasis can handle a bunch of genotype files. These indices indicate how many and where to read the genotype files and the genetic map files.
+
+genotype files index:
+<<>>=
+geno_files<-read.table(system.file("extdata", "list_geno.txt", package="FRGEpistasis"))
+geno_files
+@
+map files index:
+<<>>=
+map_files<-read.table(system.file("extdata", "list_map.txt", package="FRGEpistasis"))
+map_files
+@
+
+
+\section{ Implementation}
+\subsection{Environment Requirement}
+\begin{itemize}
+\item{{\tt a}: R version 3.0.1 or later needed.}
+\item{{\tt b}: fda package is needed.}
+\item{{\tt c}: In Windows system Environment Variable "PATH" should be set to let Operating System know where to find the R executable files.}
+\end{itemize}
+
+\subsection{Run}
+
+<<>>=
+library("FRGEpistasis")
+work_dir <-paste(system.file("extdata", package="FRGEpistasis"),"/",sep="")
+##read the list of genotype files
+geno_files<-read.table(system.file("extdata", "list_geno.txt", package="FRGEpistasis"))
+##read the list of map files
+mapFiles<-read.table(system.file("extdata", "list_map.txt", package="FRGEpistasis"))
+##read the phenotype file
+phenoInfo <- read.csv(system.file("extdata", "phenotype.csv", package="FRGEpistasis"),header=TRUE)
+##read the gene annotation file
+gLst<-read.csv(system.file("extdata", "gene.list.csv", package="FRGEpistasis"))
+##define the extension scope of gene region
+rng=0
+fdr=0.05
+## output data structure
+out_epi <- data.frame( )
+
+##log transformation
+phenoInfo [,2]=log(phenoInfo [,2])
+
+##rank transformation
+#c=0.5
+#phenoInfo[,2]=rankTransPheno(phenoInfo[,2],c)
+# test epistasis with Functional Regression Model
+out_epi = fRGEpistasis(work_dir,phenoInfo,geno_files,mapFiles,gLst,fdr,rng)
+## output the result to physical file
+write.csv(out_epi,"Output_Pvalues_Epistasis_Test.csv ")
+##if you want to test epistasis with PCA method and pointwise method then
+##implement the following command. This method is more slow than FRG method.
+#out_pp <- data.frame( )
+#out_pp <- pCAPiontwiseEpistasis(wDir,out_epi,phenoInfo,gnoFiles,mapFiles,gLst,rng)
+@
+
+\section{ Questions and Bug Reports}
+For any questions and bug reports, please contact the package maintainer Futao Zhang (futoaz@gmail.com)
+
+
+\end{document}
