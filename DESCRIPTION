@@ -3,7 +3,7 @@ Type: Package
 Title: Epistasis Analysis for Quantitative Traits by Functional
         Regression Model
 biocViews: Genetics, NetworkInference, GeneticVariability, Software
-Version: 1.0.0
+Version: 1.1.0
 Date: 2014-03-24
 Author: Futao Zhang
 Maintainer: Futao Zhang <futoaz@gmail.com>
