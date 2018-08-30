@@ -53,9 +53,9 @@ At present our package can not do multi-loci interaction test, that is it can no
 \section{ Installing FRGEpistasis}
 To install the R package FRGEpistasis, you can install it through:
 
-  library(BiocInstaller)
+  library(BiocManager)
   
-  biocLite("FRGEpistasis") \\  
+  BiocManager::install("FRGEpistasis") \\  
 Or download the source code from the bioconductor website.
 
 \section{ Data Formats}
